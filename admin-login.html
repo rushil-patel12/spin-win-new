@@ -1,0 +1,102 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Admin Login - Spin & Win</title>
+  <style>
+    * {
+      margin: 0;
+      padding: 0;
+      box-sizing: border-box;
+    }
+
+    body {
+      font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+      min-height: 100vh;
+      background: linear-gradient(135deg, #1a1a2e 0%, #16213e 50%, #0f3460 100%);
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      padding: 20px;
+    }
+
+    .container {
+      background: rgba(255, 255, 255, 0.1);
+      backdrop-filter: blur(10px);
+      border-radius: 20px;
+      padding: 50px 40px;
+      max-width: 400px;
+      width: 100%;
+      box-shadow: 0 25px 50px rgba(0, 0, 0, 0.3);
+      text-align: center;
+    }
+
+    h1 {
+      color: #ffd700;
+      font-size: 28px;
+      margin-bottom: 30px;
+    }
+
+    input[type="password"] {
+      width: 100%;
+      padding: 15px 20px;
+      font-size: 16px;
+      border: 2px solid rgba(255, 255, 255, 0.2);
+      border-radius: 10px;
+      background: rgba(255, 255, 255, 0.1);
+      color: #fff;
+      outline: none;
+      margin-bottom: 20px;
+      text-align: center;
+    }
+
+    input:focus {
+      border-color: #ffd700;
+    }
+
+    button {
+      width: 100%;
+      padding: 15px;
+      font-size: 16px;
+      font-weight: bold;
+      border: none;
+      border-radius: 10px;
+      background: linear-gradient(135deg, #ffd700, #ffed4a);
+      color: #1a1a2e;
+      cursor: pointer;
+    }
+
+    .error {
+      color: #ff4757;
+      margin-top: 15px;
+      display: none;
+    }
+  </style>
+</head>
+<body>
+
+  <div class="container">
+    <h1>🔐 Admin Login</h1>
+    <input type="password" id="password" placeholder="Enter Admin Password">
+    <button onclick="login()">Login</button>
+    <p class="error" id="errorMsg">Incorrect password!</p>
+  </div>
+
+  <script>
+    const ADMIN_PASSWORD = "admin123"; // Change this password!
+
+    function login() {
+      const password = document.getElementById('password').value;
+      
+      if (password === ADMIN_PASSWORD) {
+        sessionStorage.setItem('adminPassword', password);
+        window.location.href = 'admin.html';
+      } else {
+        document.getElementById('errorMsg').style.display = 'block';
+      }
+    }
+  </script>
+
+</body>
+</html>
