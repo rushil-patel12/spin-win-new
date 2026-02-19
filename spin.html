@@ -43,7 +43,8 @@ h1 {
     #dfe6e9 300deg 360deg
   );
   border: 8px solid #ffd700;
-  transition: transform 4s cubic-bezier(0.17, 0.67, 0.12, 0.99);
+  transition: transform 5s cubic-bezier(0.17, 0.67, 0.12, 0.99);
+  position: relative;
 }
 
 .labels span {
@@ -99,23 +100,16 @@ button:disabled {
   <div class="pointer"></div>
 
   <div class="wheel" id="wheel">
-   <div class="labels">
-  <span style="transform: rotate(0deg) translateY(-110px) rotate(0deg);">₹10</span>
-  <span style="transform: rotate(60deg) translateY(-110px) rotate(-60deg);">₹30</span>
-  <span style="transform: rotate(120deg) translateY(-110px) rotate(-120deg);">₹50</span>
-  <span style="transform: rotate(180deg) translateY(-110px) rotate(-180deg);">₹100</span>
-  <span style="transform: rotate(240deg) translateY(-110px) rotate(-240deg);">₹200</span>
-  <span style="transform: rotate(300deg) translateY(-110px) rotate(-300deg);">₹500</span>
-</div>
+    <div class="labels" id="labels"></div>
   </div>
 </div>
 
 <button onclick="spinWheel()" id="spinBtn">SPIN NOW!</button>
 <div id="result"></div>
 
-<!-- SOUND FILES -->
-<audio id="spinSound" src="https://assets.mixkit.co/active_storage/sfx/2003/2003-preview.mp3"></audio>
-<audio id="winSound" src="https://assets.mixkit.co/active_storage/sfx/2018/2018-preview.mp3"></audio>
+<!-- REALISTIC SOUNDS -->
+<audio id="tickSound" src="https://assets.mixkit.co/active_storage/sfx/2073/2073-preview.mp3"></audio>
+<audio id="winSound" src="https://assets.mixkit.co/active_storage/sfx/2762/2762-preview.mp3"></audio>
 
 <script type="module">
 import { db } from "./firebase.js";
@@ -123,19 +117,35 @@ import { doc, updateDoc } from "https://www.gstatic.com/firebasejs/10.7.1/fireba
 
 /* ===========================
    🎯 CHANGE WIN PERCENTAGE HERE
-   Total = 100 recommended
-   =========================== */
+   Total ≈ 100
+=========================== */
 
 const prizes = [
-  { text: "₹10", weight: 60 },   // 60%
-  { text: "₹30", weight: 15 },   // 15%
-  { text: "₹50", weight: 10 },   // 10%
-  { text: "₹100", weight: 7 },   // 7%
-  { text: "₹200", weight: 5 },   // 5%
-  { text: "₹500", weight: 3 }    // 3%
+  { text: "₹10", weight: 60 },
+  { text: "₹30", weight: 15 },
+  { text: "₹50", weight: 10 },
+  { text: "₹100", weight: 7 },
+  { text: "₹200", weight: 5 },
+  { text: "₹500", weight: 3 }
 ];
 
 /* =========================== */
+
+const labelsContainer = document.getElementById("labels");
+const segmentAngle = 360 / prizes.length;
+
+// AUTO CENTER TEXT
+prizes.forEach((prize, index) => {
+  const angle = segmentAngle * index;
+  const span = document.createElement("span");
+  span.innerText = prize.text;
+  span.style.transform = `
+    rotate(${angle + segmentAngle/2}deg)
+    translateY(-100px)
+    rotate(-${angle + segmentAngle/2}deg)
+  `;
+  labelsContainer.appendChild(span);
+});
 
 let isSpinning = false;
 let currentRotation = 0;
@@ -159,7 +169,7 @@ window.spinWheel = async function () {
   const button = document.getElementById("spinBtn");
   const wheel = document.getElementById("wheel");
   const result = document.getElementById("result");
-  const spinSound = document.getElementById("spinSound");
+  const tickSound = document.getElementById("tickSound");
   const winSound = document.getElementById("winSound");
 
   button.disabled = true;
@@ -174,29 +184,34 @@ window.spinWheel = async function () {
 
   try {
 
-    await updateDoc(doc(db, "codes", code), {
-      used: true
-    });
+    await updateDoc(doc(db, "codes", code), { used: true });
 
     result.innerHTML = "Spinning...";
-    spinSound.play();
 
-    const segmentAngle = 360 / prizes.length;
     const selectedIndex = getWeightedIndex();
 
-    const extraSpins = 5 * 360;
-    const stopAngle = (selectedIndex * segmentAngle) + (segmentAngle / 2);
+    const extraSpins = 6 * 360;
+    const stopAngle = (selectedIndex * segmentAngle) + (segmentAngle/2);
 
     currentRotation += extraSpins + (360 - stopAngle);
+
     wheel.style.transform = `rotate(${currentRotation}deg)`;
 
+    // REALISTIC TICK SOUND LOOP
+    tickSound.loop = true;
+    tickSound.play();
+
     setTimeout(() => {
-      spinSound.pause();
+      tickSound.pause();
+      tickSound.currentTime = 0;
+
       winSound.play();
       result.innerHTML = "🎉 You won: " + prizes[selectedIndex].text;
+
       sessionStorage.removeItem("validCode");
       isSpinning = false;
-    }, 4000);
+
+    }, 5000);
 
   } catch (error) {
     alert("Code already used!");
