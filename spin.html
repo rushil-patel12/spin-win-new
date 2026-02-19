@@ -32,7 +32,7 @@ h1 {
   50% { text-shadow: 0 0 40px rgba(255,215,0,0.8), 0 0 60px rgba(255,215,0,0.4); }
 }
 
-/* ENHANCED WHEEL CONTAINER */
+/* WHEEL */
 .wheel-container {
   position: relative;
   width: 350px;
@@ -40,7 +40,6 @@ h1 {
   filter: drop-shadow(0 0 30px rgba(255,215,0,0.4));
 }
 
-/* ENHANCED WHEEL */
 .wheel {
   width: 100%;
   height: 100%;
@@ -53,7 +52,6 @@ h1 {
     0 0 40px rgba(255,215,0,0.3);
 }
 
-/* COLORFUL SEGMENTS */
 .segments {
   width: 100%;
   height: 100%;
@@ -71,7 +69,6 @@ h1 {
   left: 0;
 }
 
-/* CENTER CIRCLE */
 .center-circle {
   position: absolute;
   top: 50%;
@@ -90,7 +87,6 @@ h1 {
   border: 4px solid #fff;
 }
 
-/* TEXT LABELS */
 .labels {
   position: absolute;
   top: 0;
@@ -111,7 +107,6 @@ h1 {
   white-space: nowrap;
 }
 
-/* ENHANCED POINTER */
 .pointer {
   position: absolute;
   top: -25px;
@@ -127,7 +122,6 @@ h1 {
   filter: drop-shadow(0 2px 4px rgba(0,0,0,0.3));
 }
 
-/* BUTTON */
 button {
   margin-top: 40px;
   padding: 18px 60px;
@@ -156,33 +150,6 @@ button:disabled {
   box-shadow: none;
 }
 
-#result {
-  margin-top: 30px;
-  font-size: 28px;
-  color: #ffd700;
-  min-height: 40px;
-  animation: popIn 0.5s ease;
-}
-
-@keyframes popIn {
-  0% { transform: scale(0); }
-  50% { transform: scale(1.2); }
-  100% { transform: scale(1); }
-}
-
-/* CONFETTI ANIMATION */
-.confetti {
-  position: fixed;
-  width: 10px;
-  height: 10px;
-  background: #ffd700;
-  animation: fall linear forwards;
-}
-
-@keyframes fall {
-  to { transform: translateY(100vh) rotate(720deg); }
-}
-
 .back-btn {
   position: absolute;
   top: 20px;
@@ -193,6 +160,111 @@ button:disabled {
   border: 1px solid rgba(255,255,255,0.2);
   border-radius: 8px;
   cursor: pointer;
+}
+
+/* ============================================
+   🎉 WIN POPUP STYLES
+============================================ */
+.popup-overlay {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  background: rgba(0, 0, 0, 0.8);
+  display: none;
+  justify-content: center;
+  align-items: center;
+  z-index: 1000;
+  animation: fadeIn 0.3s ease;
+}
+
+.popup-overlay.show {
+  display: flex;
+}
+
+@keyframes fadeIn {
+  from { opacity: 0; }
+  to { opacity: 1; }
+}
+
+.popup {
+  background: linear-gradient(135deg, #1a1a2e, #16213e);
+  border-radius: 30px;
+  padding: 50px 40px;
+  text-align: center;
+  max-width: 400px;
+  width: 90%;
+  border: 3px solid #ffd700;
+  box-shadow: 0 0 50px rgba(255,215,0,0.5);
+  animation: popUp 0.5s ease;
+}
+
+@keyframes popUp {
+  0% { transform: scale(0); }
+  50% { transform: scale(1.1); }
+  100% { transform: scale(1); }
+}
+
+.popup h2 {
+  color: #ffd700;
+  font-size: 32px;
+  margin-bottom: 10px;
+  animation: bounce 0.5s ease infinite;
+}
+
+@keyframes bounce {
+  0%, 100% { transform: translateY(0); }
+  50% { transform: translateY(-10px); }
+}
+
+.popup .prize-emoji {
+  font-size: 80px;
+  margin: 20px 0;
+  animation: spin 1s ease infinite;
+}
+
+@keyframes spin {
+  0%, 100% { transform: rotate(0deg) scale(1); }
+  50% { transform: rotate(10deg) scale(1.1); }
+}
+
+.popup .prize-text {
+  font-size: 42px;
+  font-weight: bold;
+  color: #fff;
+  margin: 20px 0;
+  text-shadow: 0 0 20px rgba(255,215,0,0.5);
+}
+
+.popup .prize-text.high {
+  color: #ffd700;
+  font-size: 48px;
+}
+
+.popup p {
+  color: #aaa;
+  font-size: 16px;
+  margin-bottom: 25px;
+}
+
+.popup button {
+  padding: 15px 40px;
+  font-size: 18px;
+  margin-top: 10px;
+}
+
+/* CONFETTI */
+.confetti {
+  position: fixed;
+  width: 10px;
+  height: 10px;
+  background: #ffd700;
+  animation: fall linear forwards;
+}
+
+@keyframes fall {
+  to { transform: translateY(100vh) rotate(720deg); }
 }
 </style>
 </head>
@@ -205,7 +277,6 @@ button:disabled {
 
 <div class="wheel-container">
   <div class="pointer"></div>
-
   <div class="wheel" id="wheel">
     <div class="segments"></div>
     <div class="labels" id="labels"></div>
@@ -214,28 +285,40 @@ button:disabled {
 </div>
 
 <button onclick="spinWheel()" id="spinBtn">SPIN NOW!</button>
-<div id="result"></div>
 
 <!-- SOUND EFFECTS -->
 <audio id="tickSound" src="https://cdn.pixabay.com/audio/2022/03/24/audio_ff5a831dfb.mp3"></audio>
 <audio id="winSound" src="https://cdn.pixabay.com/audio/2021/08/04/audio_0625c1539c.mp3"></audio>
+
+<!-- ============================================
+   🎉 WIN POPUP HTML
+============================================ -->
+<div class="popup-overlay" id="popup">
+  <div class="popup">
+    <h2>🎉 CONGRATULATIONS! 🎉</h2>
+    <div class="prize-emoji" id="prizeEmoji">🎊</div>
+    <div class="prize-text" id="prizeText">₹50</div>
+    <p>You have won this amazing prize!</p>
+    <button onclick="closePopup()">Awesome! 🎉</button>
+  </div>
+</div>
 
 <script type="module">
 import { db } from "./firebase.js";
 import { doc, updateDoc, getDoc } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js";
 
 /* ===========================
-   🎯 PRIZES - CHANGE HERE
+   🎯 PRIZES
    Weight = Probability
 =========================== */
 
 const prizes = [
-  { text: "₹10", weight: 50 },
-  { text: "₹30", weight: 20 },
-  { text: "₹50", weight: 15 },
-  { text: "₹100", weight: 8 },
-  { text: "₹200", weight: 5 },
-  { text: "₹500", weight: 2 }
+  { text: "₹10", weight: 50, emoji: "💰" },
+  { text: "₹30", weight: 20, emoji: "💵" },
+  { text: "₹50", weight: 15, emoji: "🤑" },
+  { text: "₹100", weight: 8, emoji: "💎" },
+  { text: "₹200", weight: 5, emoji: "🏆" },
+  { text: "₹500", weight: 2, emoji: "👑" }
 ];
 
 /* =========================== */
@@ -275,21 +358,48 @@ function getWeightedIndex() {
   return 0;
 }
 
-// CONFETTI FUNCTION
+// CONFETTI
 function createConfetti() {
   const colors = ['#ffd700', '#ff6b6b', '#4ecdc4', '#45b7d1', '#96ceb4', '#ffeaa7'];
   
-  for (let i = 0; i < 50; i++) {
+  for (let i = 0; i < 80; i++) {
     const confetti = document.createElement('div');
     confetti.className = 'confetti';
     confetti.style.left = Math.random() * 100 + 'vw';
     confetti.style.background = colors[Math.floor(Math.random() * colors.length)];
     confetti.style.animationDuration = (Math.random() * 2 + 2) + 's';
     confetti.style.animationDelay = Math.random() * 0.5 + 's';
+    confetti.style.width = (Math.random() * 10 + 5) + 'px';
+    confetti.style.height = (Math.random() * 10 + 5) + 'px';
     document.body.appendChild(confetti);
     
     setTimeout(() => confetti.remove(), 4000);
   }
+}
+
+// SHOW WIN POPUP
+function showWinPopup(prize) {
+  const popup = document.getElementById("popup");
+  const prizeText = document.getElementById("prizeText");
+  const prizeEmoji = document.getElementById("prizeEmoji");
+  
+  prizeText.innerText = prize.text;
+  prizeEmoji.innerText = prize.emoji;
+  
+  // High value prize - gold color
+  if (prize.text === "₹200" || prize.text === "₹500") {
+    prizeText.classList.add("high");
+  } else {
+    prizeText.classList.remove("high");
+  }
+  
+  popup.classList.add("show");
+  createConfetti();
+}
+
+window.closePopup = function() {
+  const popup = document.getElementById("popup");
+  popup.classList.remove("show");
 }
 
 window.spinWheel = async function () {
@@ -297,12 +407,10 @@ window.spinWheel = async function () {
   isSpinning = true;
 
   const button = document.getElementById("spinBtn");
-  const result = document.getElementById("result");
   const tickSound = document.getElementById("tickSound");
   const winSound = document.getElementById("winSound");
 
   button.disabled = true;
-  result.innerHTML = "";
 
   const code = sessionStorage.getItem("validCode");
 
@@ -339,10 +447,9 @@ window.spinWheel = async function () {
     console.error("Error marking code:", error);
   }
 
-  result.innerHTML = "🎲 Spinning...";
-
   // RANDOM WIN
   const selectedIndex = getWeightedIndex();
+  const selectedPrize = prizes[selectedIndex];
   
   const extraSpins = 8 * 360;
   const stopAngle = (selectedIndex * segmentAngle) + (segmentAngle / 2);
@@ -350,7 +457,7 @@ window.spinWheel = async function () {
 
   wheel.style.transform = `rotate(${currentRotation}deg)`;
 
-  // TICK SOUND LOOP
+  // TICK SOUND
   let tickCount = 0;
   const tickInterval = setInterval(() => {
     if (tickCount < 10) {
@@ -362,13 +469,13 @@ window.spinWheel = async function () {
     }
   }, 300);
 
-  // WIN SOUND AFTER SPIN
+  // SHOW POPUP AFTER SPIN
   setTimeout(() => {
     tickSound.pause();
     winSound.play().catch(() => {});
     
-    result.innerHTML = `🎉 You Won: <strong>${prizes[selectedIndex].text}</strong>`;
-    createConfetti();
+    // 🎉 SHOW WIN POPUP!
+    showWinPopup(selectedPrize);
     
     isSpinning = false;
     button.disabled = true;
