@@ -182,7 +182,9 @@
         await updateDoc(doc(db, "codes", code), {
           used: true
         });
-
+        
+          sessionStorage.removeItem("validCode");
+        
         document.getElementById("result").innerHTML =
           `<span class="prize">${prizes[randomIndex]}</span>`;
 
