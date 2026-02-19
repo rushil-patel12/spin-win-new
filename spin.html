@@ -16,35 +16,87 @@ body {
   flex-direction: column;
   align-items: center;
   justify-content: center;
+  overflow: hidden;
 }
 
 h1 {
   color: #ffd700;
   font-size: 36px;
-  margin-bottom: 30px;
+  margin-bottom: 20px;
+  text-shadow: 0 0 20px rgba(255,215,0,0.5);
+  animation: glow 2s ease-in-out infinite;
 }
 
+@keyframes glow {
+  0%, 100% { text-shadow: 0 0 20px rgba(255,215,0,0.5); }
+  50% { text-shadow: 0 0 40px rgba(255,215,0,0.8), 0 0 60px rgba(255,215,0,0.4); }
+}
+
+/* ENHANCED WHEEL CONTAINER */
 .wheel-container {
   position: relative;
-  width: 320px;
-  height: 320px;
+  width: 350px;
+  height: 350px;
+  filter: drop-shadow(0 0 30px rgba(255,215,0,0.4));
 }
 
+/* ENHANCED WHEEL */
 .wheel {
   width: 100%;
   height: 100%;
   border-radius: 50%;
-  background: conic-gradient(
-    #ff6b6b 0deg 60deg,
-    #4ecdc4 60deg 120deg,
-    #45b7d1 120deg 180deg,
-    #96ceb4 180deg 240deg,
-    #ffeaa7 240deg 300deg,
-    #dfe6e9 300deg 360deg
-  );
-  border: 8px solid #ffd700;
-  transition: transform 5s cubic-bezier(0.17, 0.67, 0.12, 0.99);
   position: relative;
+  transition: transform 5s cubic-bezier(0.25, 0.1, 0.25, 1);
+  box-shadow: 
+    0 0 0 8px #ffd700,
+    0 0 0 12px rgba(255,215,0,0.3),
+    0 0 40px rgba(255,215,0,0.3);
+}
+
+/* COLORFUL SEGMENTS */
+.segments {
+  width: 100%;
+  height: 100%;
+  border-radius: 50%;
+  background: conic-gradient(
+    #FF6B6B 0deg 60deg,
+    #4ECDC4 60deg 120deg,
+    #45B7D1 120deg 180deg,
+    #96CEB4 180deg 240deg,
+    #FFEAA7 240deg 300deg,
+    #DDA0DD 300deg 360deg
+  );
+  position: absolute;
+  top: 0;
+  left: 0;
+}
+
+/* CENTER CIRCLE */
+.center-circle {
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  width: 80px;
+  height: 80px;
+  background: linear-gradient(135deg, #ffd700, #ffed4a);
+  border-radius: 50%;
+  box-shadow: 0 0 20px rgba(0,0,0,0.3);
+  z-index: 5;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 30px;
+  border: 4px solid #fff;
+}
+
+/* TEXT LABELS */
+.labels {
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
 }
 
 .labels span {
@@ -52,35 +104,56 @@ h1 {
   left: 50%;
   top: 50%;
   transform-origin: center;
-  font-weight: bold;
-  font-size: 18px;
-  color: #000;
+  font-weight: 800;
+  font-size: 16px;
+  color: #1a1a2e;
+  text-shadow: 0 0 3px rgba(255,255,255,0.5);
+  white-space: nowrap;
 }
 
+/* ENHANCED POINTER */
 .pointer {
   position: absolute;
-  top: -20px;
+  top: -25px;
   left: 50%;
   transform: translateX(-50%);
-  border-left: 20px solid transparent;
-  border-right: 20px solid transparent;
-  border-top: 40px solid red;
   z-index: 10;
 }
 
+.pointer::before {
+  content: '▼';
+  font-size: 40px;
+  color: #ff0000;
+  filter: drop-shadow(0 2px 4px rgba(0,0,0,0.3));
+}
+
+/* BUTTON */
 button {
   margin-top: 40px;
-  padding: 18px 50px;
-  font-size: 20px;
+  padding: 18px 60px;
+  font-size: 22px;
   font-weight: bold;
   border: none;
   border-radius: 50px;
   background: linear-gradient(135deg, #ffd700, #ffed4a);
+  color: #1a1a2e;
   cursor: pointer;
+  transition: all 0.3s ease;
+  box-shadow: 0 10px 30px rgba(255,215,0,0.4);
+  text-transform: uppercase;
+  letter-spacing: 2px;
+}
+
+button:hover {
+  transform: translateY(-3px);
+  box-shadow: 0 15px 40px rgba(255,215,0,0.6);
 }
 
 button:disabled {
   background: #666;
+  cursor: not-allowed;
+  transform: none;
+  box-shadow: none;
 }
 
 #result {
@@ -88,11 +161,45 @@ button:disabled {
   font-size: 28px;
   color: #ffd700;
   min-height: 40px;
+  animation: popIn 0.5s ease;
+}
+
+@keyframes popIn {
+  0% { transform: scale(0); }
+  50% { transform: scale(1.2); }
+  100% { transform: scale(1); }
+}
+
+/* CONFETTI ANIMATION */
+.confetti {
+  position: fixed;
+  width: 10px;
+  height: 10px;
+  background: #ffd700;
+  animation: fall linear forwards;
+}
+
+@keyframes fall {
+  to { transform: translateY(100vh) rotate(720deg); }
+}
+
+.back-btn {
+  position: absolute;
+  top: 20px;
+  left: 20px;
+  padding: 10px 20px;
+  background: rgba(255,255,255,0.1);
+  color: #fff;
+  border: 1px solid rgba(255,255,255,0.2);
+  border-radius: 8px;
+  cursor: pointer;
 }
 </style>
 </head>
 
 <body>
+
+<button class="back-btn" onclick="window.location.href='index.html'">← Back</button>
 
 <h1>🎰 Spin & Win 🎰</h1>
 
@@ -100,50 +207,57 @@ button:disabled {
   <div class="pointer"></div>
 
   <div class="wheel" id="wheel">
+    <div class="segments"></div>
     <div class="labels" id="labels"></div>
+    <div class="center-circle">🎰</div>
   </div>
 </div>
 
 <button onclick="spinWheel()" id="spinBtn">SPIN NOW!</button>
 <div id="result"></div>
 
-<!-- REALISTIC SOUNDS -->
-<audio id="tickSound" src="https://assets.mixkit.co/active_storage/sfx/2073/2073-preview.mp3"></audio>
-<audio id="winSound" src="https://assets.mixkit.co/active_storage/sfx/2762/2762-preview.mp3"></audio>
+<!-- SOUND EFFECTS -->
+<audio id="tickSound" src="https://cdn.pixabay.com/audio/2022/03/24/audio_ff5a831dfb.mp3"></audio>
+<audio id="winSound" src="https://cdn.pixabay.com/audio/2021/08/04/audio_0625c1539c.mp3"></audio>
 
 <script type="module">
 import { db } from "./firebase.js";
-import { doc, updateDoc } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js";
+import { doc, updateDoc, getDoc } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js";
 
 /* ===========================
-   🎯 CHANGE WIN PERCENTAGE HERE
-   Total ≈ 100
+   🎯 PRIZES - CHANGE HERE
+   Weight = Probability
 =========================== */
 
 const prizes = [
-  { text: "₹10", weight: 60 },
-  { text: "₹30", weight: 15 },
-  { text: "₹50", weight: 10 },
-  { text: "₹100", weight: 7 },
+  { text: "₹10", weight: 50 },
+  { text: "₹30", weight: 20 },
+  { text: "₹50", weight: 15 },
+  { text: "₹100", weight: 8 },
   { text: "₹200", weight: 5 },
-  { text: "₹500", weight: 3 }
+  { text: "₹500", weight: 2 }
 ];
 
 /* =========================== */
 
+const wheel = document.getElementById("wheel");
 const labelsContainer = document.getElementById("labels");
 const segmentAngle = 360 / prizes.length;
 
-// AUTO CENTER TEXT
+// CREATE LABELS
 prizes.forEach((prize, index) => {
-  const angle = segmentAngle * index;
+  const angle = (segmentAngle * index) + (segmentAngle / 2);
+  const radians = (angle - 90) * (Math.PI / 180);
+  const radius = 120;
+  
+  const x = 175 + radius * Math.cos(radians);
+  const y = 175 + radius * Math.sin(radians);
+  
   const span = document.createElement("span");
   span.innerText = prize.text;
-  span.style.transform = `
-    rotate(${angle + segmentAngle/2}deg)
-    translateY(-100px)
-    rotate(-${angle + segmentAngle/2}deg)
-  `;
+  span.style.left = `${x}px`;
+  span.style.top = `${y}px`;
+  span.style.transform = `translate(-50%, -50%)`;
   labelsContainer.appendChild(span);
 });
 
@@ -161,63 +275,108 @@ function getWeightedIndex() {
   return 0;
 }
 
-window.spinWheel = async function () {
+// CONFETTI FUNCTION
+function createConfetti() {
+  const colors = ['#ffd700', '#ff6b6b', '#4ecdc4', '#45b7d1', '#96ceb4', '#ffeaa7'];
+  
+  for (let i = 0; i < 50; i++) {
+    const confetti = document.createElement('div');
+    confetti.className = 'confetti';
+    confetti.style.left = Math.random() * 100 + 'vw';
+    confetti.style.background = colors[Math.floor(Math.random() * colors.length)];
+    confetti.style.animationDuration = (Math.random() * 2 + 2) + 's';
+    confetti.style.animationDelay = Math.random() * 0.5 + 's';
+    document.body.appendChild(confetti);
+    
+    setTimeout(() => confetti.remove(), 4000);
+  }
+}
 
+window.spinWheel = async function () {
   if (isSpinning) return;
   isSpinning = true;
 
   const button = document.getElementById("spinBtn");
-  const wheel = document.getElementById("wheel");
   const result = document.getElementById("result");
   const tickSound = document.getElementById("tickSound");
   const winSound = document.getElementById("winSound");
 
   button.disabled = true;
+  result.innerHTML = "";
 
   const code = sessionStorage.getItem("validCode");
 
   if (!code) {
-    alert("No valid code!");
+    alert("No valid code! Go back and enter code.");
     window.location.href = "index.html";
     return;
   }
 
+  // CHECK IF CODE ALREADY USED
   try {
-
-    await updateDoc(doc(db, "codes", code), { used: true });
-
-    result.innerHTML = "Spinning...";
-
-    const selectedIndex = getWeightedIndex();
-
-    const extraSpins = 6 * 360;
-    const stopAngle = (selectedIndex * segmentAngle) + (segmentAngle/2);
-
-    currentRotation += extraSpins + (360 - stopAngle);
-
-    wheel.style.transform = `rotate(${currentRotation}deg)`;
-
-    // REALISTIC TICK SOUND LOOP
-    tickSound.loop = true;
-    tickSound.play();
-
-    setTimeout(() => {
-      tickSound.pause();
-      tickSound.currentTime = 0;
-
-      winSound.play();
-      result.innerHTML = "🎉 You won: " + prizes[selectedIndex].text;
-
-      sessionStorage.removeItem("validCode");
-      isSpinning = false;
-
-    }, 5000);
-
+    const docRef = doc(db, "codes", code);
+    const docSnap = await getDoc(docRef);
+    
+    if (!docSnap.exists()) {
+      alert("Invalid code!");
+      window.location.href = "index.html";
+      return;
+    }
+    
+    if (docSnap.data().used) {
+      alert("⚠️ Code already used! Get a new code.");
+      window.location.href = "index.html";
+      return;
+    }
   } catch (error) {
-    alert("Code already used!");
-    sessionStorage.removeItem("validCode");
-    window.location.href = "index.html";
+    console.error("Error:", error);
   }
+
+  // MARK CODE AS USED
+  try {
+    await updateDoc(doc(db, "codes", code), { used: true });
+  } catch (error) {
+    console.error("Error marking code:", error);
+  }
+
+  result.innerHTML = "🎲 Spinning...";
+
+  // RANDOM WIN
+  const selectedIndex = getWeightedIndex();
+  
+  const extraSpins = 8 * 360;
+  const stopAngle = (selectedIndex * segmentAngle) + (segmentAngle / 2);
+  currentRotation += extraSpins + (360 - stopAngle);
+
+  wheel.style.transform = `rotate(${currentRotation}deg)`;
+
+  // TICK SOUND LOOP
+  let tickCount = 0;
+  const tickInterval = setInterval(() => {
+    if (tickCount < 10) {
+      tickSound.currentTime = 0;
+      tickSound.play().catch(() => {});
+      tickCount++;
+    } else {
+      clearInterval(tickInterval);
+    }
+  }, 300);
+
+  // WIN SOUND AFTER SPIN
+  setTimeout(() => {
+    tickSound.pause();
+    winSound.play().catch(() => {});
+    
+    result.innerHTML = `🎉 You Won: <strong>${prizes[selectedIndex].text}</strong>`;
+    createConfetti();
+    
+    isSpinning = false;
+    button.disabled = true;
+    button.innerHTML = "SPIN USED";
+    
+    sessionStorage.removeItem("validCode");
+    
+  }, 5000);
 };
 </script>
 
