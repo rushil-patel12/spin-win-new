@@ -1,0 +1,249 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Admin Panel - Spin & Win</title>
+
+<style>
+*{margin:0;padding:0;box-sizing:border-box}
+body{
+  font-family:'Segoe UI',sans-serif;
+  background:linear-gradient(135deg,#1a1a2e,#16213e,#0f3460);
+  padding:20px;
+  min-height:100vh;
+}
+.header{
+  background:rgba(255,255,255,0.1);
+  padding:20px;
+  border-radius:15px;
+  margin-bottom:30px;
+  display:flex;
+  justify-content:space-between;
+  align-items:center;
+}
+h1{color:#ffd700}
+.logout-btn{
+  background:#ff4757;
+  color:#fff;
+  border:none;
+  padding:10px 20px;
+  border-radius:8px;
+  cursor:pointer;
+}
+.container{max-width:1200px;margin:auto}
+.card{
+  background:rgba(255,255,255,0.1);
+  padding:30px;
+  border-radius:15px;
+  margin-bottom:20px;
+}
+.card h2{color:#fff;margin-bottom:20px}
+input{
+  width:100%;
+  padding:12px;
+  margin-bottom:15px;
+  border-radius:10px;
+  border:2px solid rgba(255,255,255,0.2);
+  background:rgba(255,255,255,0.1);
+  color:#fff;
+}
+button{
+  padding:12px 30px;
+  border:none;
+  border-radius:10px;
+  background:linear-gradient(135deg,#ffd700,#ffed4a);
+  cursor:pointer;
+  font-weight:bold;
+}
+.stats{
+  display:grid;
+  grid-template-columns:repeat(auto-fit,minmax(200px,1fr));
+  gap:20px;
+  margin-bottom:30px;
+}
+.stat-card{
+  background:rgba(255,255,255,0.1);
+  padding:25px;
+  border-radius:15px;
+  text-align:center;
+}
+.stat-number{
+  font-size:35px;
+  color:#ffd700;
+  font-weight:bold;
+}
+.codes-list{
+  display:grid;
+  grid-template-columns:repeat(auto-fill,minmax(150px,1fr));
+  gap:15px;
+  margin-top:20px;
+}
+.code-item{
+  background:rgba(255,255,255,0.1);
+  padding:15px;
+  border-radius:10px;
+  text-align:center;
+  position:relative;
+}
+.code-item.used{opacity:0.5}
+.code-text{
+  color:#ffd700;
+  font-weight:bold;
+  letter-spacing:2px;
+}
+.delete-btn{
+  position:absolute;
+  top:5px;
+  right:5px;
+  background:#ff4757;
+  color:#fff;
+  border:none;
+  width:20px;
+  height:20px;
+  border-radius:50%;
+  cursor:pointer;
+}
+.success-msg{
+  background:#2ed573;
+  color:#fff;
+  padding:10px;
+  border-radius:8px;
+  margin-bottom:10px;
+  display:none;
+}
+</style>
+</head>
+
+<body>
+
+<div class="header">
+<h1>🎰 Admin Panel</h1>
+<button class="logout-btn" onclick="logout()">Logout</button>
+</div>
+
+<div class="container">
+
+<div class="stats">
+  <div class="stat-card">
+    <div class="stat-number" id="totalCodes">0</div>
+    <div>Total Codes</div>
+  </div>
+  <div class="stat-card">
+    <div class="stat-number" id="usedCodes">0</div>
+    <div>Used Codes</div>
+  </div>
+  <div class="stat-card">
+    <div class="stat-number" id="remainingCodes">0</div>
+    <div>Remaining</div>
+  </div>
+</div>
+
+<div class="card">
+<h2>Generate Codes</h2>
+
+<div class="success-msg" id="successMsg">Codes Generated Successfully!</div>
+
+<input type="number" id="codeCount" value="10" min="1" max="100" placeholder="Number of codes">
+<input type="text" id="codePrefix" maxlength="5" placeholder="Prefix (optional)">
+<input type="number" id="codeLength" value="6" min="4" max="10" placeholder="Code Length">
+
+<button onclick="generateCodes()">Generate</button>
+</div>
+
+<div class="card">
+<h2>All Codes</h2>
+<button onclick="copyAllCodes()">Copy All</button>
+<div class="codes-list" id="codesList"></div>
+</div>
+
+</div>
+
+<script type="module">
+import { db } from "./firebase.js";
+import { collection, getDocs, doc, setDoc, deleteDoc } 
+from "https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js";
+
+// Admin Login Check
+if(!sessionStorage.getItem("adminPassword")){
+  window.location.href="admin-login.html";
+}
+
+loadCodes();
+
+async function loadCodes(){
+  const list=document.getElementById("codesList");
+  list.innerHTML="";
+  const snap=await getDocs(collection(db,"codes"));
+
+  let total=0,used=0;
+
+  snap.forEach(d=>{
+    const data=d.data();
+    total++;
+    if(data.used) used++;
+
+    const div=document.createElement("div");
+    div.className=`code-item ${data.used?'used':''}`;
+    div.innerHTML=`
+      <div class="code-text">${d.id}</div>
+      <div>${data.used?'❌ Used':'✅ Available'}</div>
+      <button class="delete-btn" onclick="deleteCode('${d.id}')">×</button>
+    `;
+    list.appendChild(div);
+  });
+
+  document.getElementById("totalCodes").textContent=total;
+  document.getElementById("usedCodes").textContent=used;
+  document.getElementById("remainingCodes").textContent=total-used;
+}
+
+window.generateCodes=async function(){
+  const count=parseInt(document.getElementById("codeCount").value);
+  const prefix=document.getElementById("codePrefix").value.toUpperCase();
+  const length=parseInt(document.getElementById("codeLength").value);
+
+  const chars="ABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789";
+
+  for(let i=0;i<count;i++){
+    let code=prefix;
+    for(let j=0;j<length;j++){
+      code+=chars.charAt(Math.floor(Math.random()*chars.length));
+    }
+
+    // 🔥 CODE = DOCUMENT ID
+    await setDoc(doc(db,"codes",code),{
+      used:false,
+      createdAt:new Date().toISOString()
+    });
+  }
+
+  document.getElementById("successMsg").style.display="block";
+  setTimeout(()=>{document.getElementById("successMsg").style.display="none";},2000);
+
+  loadCodes();
+}
+
+window.deleteCode=async function(code){
+  if(confirm("Delete this code?")){
+    await deleteDoc(doc(db,"codes",code));
+    loadCodes();
+  }
+}
+
+window.copyAllCodes=async function(){
+  const snap=await getDocs(collection(db,"codes"));
+  let codes=[];
+  snap.forEach(d=>codes.push(d.id));
+  navigator.clipboard.writeText(codes.join("\n"));
+  alert("Copied!");
+}
+
+window.logout=function(){
+  sessionStorage.removeItem("adminPassword");
+  window.location.href="admin-login.html";
+}
+</script>
+
+</body>
+</html>
