@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Spin the Wheel - Spin & Win</title>
+<title>Spin & Win</title>
 
 <style>
 * { margin: 0; padding: 0; box-sizing: border-box; }
@@ -22,14 +22,12 @@ h1 {
   color: #ffd700;
   font-size: 36px;
   margin-bottom: 30px;
-  text-shadow: 0 0 20px rgba(255, 215, 0, 0.5);
-  letter-spacing: 3px;
 }
 
 .wheel-container {
   position: relative;
-  width: 300px;
-  height: 300px;
+  width: 320px;
+  height: 320px;
 }
 
 .wheel {
@@ -45,9 +43,7 @@ h1 {
     #dfe6e9 300deg 360deg
   );
   border: 8px solid #ffd700;
-  box-shadow: 0 0 50px rgba(255, 215, 0, 0.5);
   transition: transform 4s cubic-bezier(0.17, 0.67, 0.12, 0.99);
-  position: relative;
 }
 
 .labels span {
@@ -104,12 +100,12 @@ button:disabled {
 
   <div class="wheel" id="wheel">
     <div class="labels">
-      <span style="transform: rotate(30deg) translateY(-120px);">₹10</span>
-      <span style="transform: rotate(90deg) translateY(-120px);">₹30</span>
-      <span style="transform: rotate(150deg) translateY(-120px);">₹50</span>
-      <span style="transform: rotate(210deg) translateY(-120px);">₹100</span>
-      <span style="transform: rotate(270deg) translateY(-120px);">₹200</span>
-      <span style="transform: rotate(330deg) translateY(-120px);">₹500</span>
+      <span style="transform: rotate(30deg) translateY(-130px);">₹10</span>
+      <span style="transform: rotate(90deg) translateY(-130px);">₹30</span>
+      <span style="transform: rotate(150deg) translateY(-130px);">₹50</span>
+      <span style="transform: rotate(210deg) translateY(-130px);">₹100</span>
+      <span style="transform: rotate(270deg) translateY(-130px);">₹200</span>
+      <span style="transform: rotate(330deg) translateY(-130px);">₹500</span>
     </div>
   </div>
 </div>
@@ -117,26 +113,32 @@ button:disabled {
 <button onclick="spinWheel()" id="spinBtn">SPIN NOW!</button>
 <div id="result"></div>
 
+<!-- SOUND FILES -->
+<audio id="spinSound" src="https://assets.mixkit.co/active_storage/sfx/2003/2003-preview.mp3"></audio>
+<audio id="winSound" src="https://assets.mixkit.co/active_storage/sfx/2018/2018-preview.mp3"></audio>
+
 <script type="module">
 import { db } from "./firebase.js";
 import { doc, updateDoc } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js";
 
 /* ===========================
-   🎯 EDIT PERCENTAGE HERE
+   🎯 CHANGE WIN PERCENTAGE HERE
+   Total = 100 recommended
    =========================== */
 
 const prizes = [
-  { text: "₹10", weight: 40 },
-  { text: "₹30", weight: 20 },
-  { text: "₹50", weight: 15 },
-  { text: "₹100", weight: 10 },
-  { text: "₹200", weight: 10 },
-  { text: "₹500", weight: 5 }
+  { text: "₹10", weight: 60 },   // 60%
+  { text: "₹30", weight: 15 },   // 15%
+  { text: "₹50", weight: 10 },   // 10%
+  { text: "₹100", weight: 7 },   // 7%
+  { text: "₹200", weight: 5 },   // 5%
+  { text: "₹500", weight: 3 }    // 3%
 ];
 
 /* =========================== */
 
 let isSpinning = false;
+let currentRotation = 0;
 
 function getWeightedIndex() {
   const totalWeight = prizes.reduce((sum, p) => sum + p.weight, 0);
@@ -157,6 +159,8 @@ window.spinWheel = async function () {
   const button = document.getElementById("spinBtn");
   const wheel = document.getElementById("wheel");
   const result = document.getElementById("result");
+  const spinSound = document.getElementById("spinSound");
+  const winSound = document.getElementById("winSound");
 
   button.disabled = true;
 
@@ -175,14 +179,20 @@ window.spinWheel = async function () {
     });
 
     result.innerHTML = "Spinning...";
+    spinSound.play();
 
     const segmentAngle = 360 / prizes.length;
     const selectedIndex = getWeightedIndex();
-    const rotation = 1440 + (selectedIndex * segmentAngle) + (segmentAngle / 2);
 
-    wheel.style.transform = `rotate(${rotation}deg)`;
+    const extraSpins = 5 * 360;
+    const stopAngle = (selectedIndex * segmentAngle) + (segmentAngle / 2);
+
+    currentRotation += extraSpins + (360 - stopAngle);
+    wheel.style.transform = `rotate(${currentRotation}deg)`;
 
     setTimeout(() => {
+      spinSound.pause();
+      winSound.play();
       result.innerHTML = "🎉 You won: " + prizes[selectedIndex].text;
       sessionStorage.removeItem("validCode");
       isSpinning = false;
