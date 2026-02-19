@@ -139,61 +139,78 @@
   <div id="result"></div>
 
   <script type="module">
-    import { db } from "./firebase.js";
-    import { doc, updateDoc } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js";
+  import { db } from "./firebase.js";
+  import { doc, updateDoc } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js";
 
-    const prizes = [
-      "🎉 Jackpot!",
-      "💰 100 Coins",
-      "⭐ 50 Points",
-      "🎁 Bonus Spin",
-      "💎 25 Gems",
-      "🏆 Prize!"
-    ];
+  const prizes = [
+    "🎉 Jackpot!",
+    "💰 100 Coins",
+    "⭐ 50 Points",
+    "🎁 Bonus Spin",
+    "💎 25 Gems",
+    "🏆 Prize!"
+  ];
 
-    let isSpinning = false;
+  let isSpinning = false;
 
-    window.spinWheel = async function() {
+  // 🔒 Direct spin.html open stop
+  window.onload = function () {
+    const code = sessionStorage.getItem("validCode");
+    if (!code) {
+      window.location.href = "index.html";
+    }
+  };
 
-      if (isSpinning) return;
+  window.spinWheel = async function () {
 
-      const code = sessionStorage.getItem("validCode");
+    if (isSpinning) return;
+    isSpinning = true;
 
-      if (!code) {
-        alert("No valid code! Go back.");
-        window.location.href = "index.html";
-        return;
-      }
+    const button = document.getElementById("spinBtn");
+    const wheel = document.getElementById("wheel");
+    const result = document.getElementById("result");
 
-      isSpinning = true;
-      document.getElementById("spinBtn").disabled = true;
-      document.getElementById("result").innerHTML = "Spinning...";
+    button.disabled = true;
 
-      const wheel = document.getElementById("wheel");
+    const code = sessionStorage.getItem("validCode");
+
+    if (!code) {
+      alert("No valid code!");
+      window.location.href = "index.html";
+      return;
+    }
+
+    try {
+
+      // 🔥 Mark code as used FIRST (important)
+      await updateDoc(doc(db, "codes", code), {
+        used: true
+      });
+
+      result.innerHTML = "Spinning...";
 
       const randomIndex = Math.floor(Math.random() * prizes.length);
       const rotation = 1440 + (randomIndex * 60);
 
       wheel.style.transform = `rotate(${rotation}deg)`;
 
-      setTimeout(async () => {
+      setTimeout(() => {
 
-        // 🔥 Mark code as used in Firestore
-        await updateDoc(doc(db, "codes", code), {
-          used: true
-        });
-        
-          sessionStorage.removeItem("validCode");
-        
-        document.getElementById("result").innerHTML =
+        result.innerHTML =
           `<span class="prize">${prizes[randomIndex]}</span>`;
 
-        isSpinning = false;
-        document.getElementById("spinBtn").disabled = false;
+        sessionStorage.removeItem("validCode");
 
       }, 4000);
+
+    } catch (error) {
+      alert("Code already used!");
+      sessionStorage.removeItem("validCode");
+      window.location.href = "index.html";
     }
-  </script>
+  };
+</script>
+
 
 </body>
 </html>
