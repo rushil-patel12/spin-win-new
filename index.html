@@ -1,0 +1,219 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Spin & Win - Enter Code</title>
+  <style>
+    * {
+      margin: 0;
+      padding: 0;
+      box-sizing: border-box;
+    }
+
+    body {
+      font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+      min-height: 100vh;
+      background: linear-gradient(135deg, #1a1a2e 0%, #16213e 50%, #0f3460 100%);
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      padding: 20px;
+    }
+
+    .container {
+      background: rgba(255, 255, 255, 0.1);
+      backdrop-filter: blur(10px);
+      border-radius: 20px;
+      padding: 50px 40px;
+      max-width: 450px;
+      width: 100%;
+      box-shadow: 0 25px 50px rgba(0, 0, 0, 0.3);
+      border: 1px solid rgba(255, 255, 255, 0.1);
+      text-align: center;
+    }
+
+    .logo {
+      font-size: 80px;
+      margin-bottom: 10px;
+      animation: spin 3s ease-in-out infinite;
+    }
+
+    @keyframes spin {
+      0%, 100% { transform: rotate(0deg); }
+      50% { transform: rotate(360deg); }
+    }
+
+    h1 {
+      color: #fff;
+      font-size: 32px;
+      margin-bottom: 10px;
+      text-transform: uppercase;
+      letter-spacing: 3px;
+      text-shadow: 0 0 20px rgba(255, 215, 0, 0.5);
+    }
+
+    .subtitle {
+      color: #aaa;
+      font-size: 16px;
+      margin-bottom: 40px;
+    }
+
+    .input-group {
+      margin-bottom: 25px;
+    }
+
+    input[type="text"] {
+      width: 100%;
+      padding: 18px 25px;
+      font-size: 18px;
+      border: 2px solid rgba(255, 255, 255, 0.2);
+      border-radius: 50px;
+      background: rgba(255, 255, 255, 0.1);
+      color: #fff;
+      outline: none;
+      transition: all 0.3s ease;
+      text-align: center;
+      letter-spacing: 2px;
+    }
+
+    input[type="text"]::placeholder {
+      color: rgba(255, 255, 255, 0.5);
+    }
+
+    input[type="text"]:focus {
+      border-color: #ffd700;
+      box-shadow: 0 0 20px rgba(255, 215, 0, 0.3);
+      background: rgba(255, 255, 255, 0.15);
+    }
+
+    button {
+      width: 100%;
+      padding: 18px 40px;
+      font-size: 18px;
+      font-weight: bold;
+      text-transform: uppercase;
+      letter-spacing: 2px;
+      border: none;
+      border-radius: 50px;
+      background: linear-gradient(135deg, #ffd700 0%, #ffed4a 50%, #ffd700 100%);
+      color: #1a1a2e;
+      cursor: pointer;
+      transition: all 0.3s ease;
+      box-shadow: 0 10px 30px rgba(255, 215, 0, 0.3);
+    }
+
+    button:hover {
+      transform: translateY(-3px);
+      box-shadow: 0 15px 40px rgba(255, 215, 0, 0.5);
+    }
+
+    button:active {
+      transform: translateY(0);
+    }
+
+    .features {
+      margin-top: 40px;
+      display: flex;
+      justify-content: center;
+      gap: 20px;
+    }
+
+    .feature {
+      color: #ffd700;
+      font-size: 24px;
+    }
+
+    .glow {
+      position: absolute;
+      width: 100px;
+      height: 100px;
+      background: radial-gradient(circle, rgba(255, 215, 0, 0.3) 0%, transparent 70%);
+      border-radius: 50%;
+      animation: pulse 2s ease-in-out infinite;
+    }
+
+    @keyframes pulse {
+      0%, 100% { transform: scale(1); opacity: 0.5; }
+      50% { transform: scale(1.5); opacity: 0; }
+    }
+
+    .glow-1 { top: 10%; left: 10%; }
+    .glow-2 { bottom: 10%; right: 10%; }
+
+    @media (max-width: 480px) {
+      .container {
+        padding: 30px 20px;
+      }
+      h1 {
+        font-size: 24px;
+      }
+      input[type="text"], button {
+        padding: 15px 20px;
+        font-size: 16px;
+      }
+    }
+  </style>
+</head>
+<body>
+
+  <div class="glow glow-1"></div>
+  <div class="glow glow-2"></div>
+
+  <div class="container">
+    <div class="logo">🎰</div>
+    <h1>Spin & Win</h1>
+    <p class="subtitle">Enter your lucky code to spin the wheel!</p>
+
+    <div class="input-group">
+      <input type="text" id="codeInput" placeholder="Enter Your Code" maxlength="10">
+    </div>
+
+    <button onclick="checkCode()">Submit Code</button>
+
+    <div class="features">
+      <span class="feature">🎁</span>
+      <span class="feature">💰</span>
+      <span class="feature">⭐</span>
+    </div>
+  </div>
+
+  <script type="module">
+    import { db } from "./firebase.js";
+    import { doc, getDoc } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js";
+
+    window.checkCode = async function() {
+      const code = document.getElementById("codeInput").value.trim().toUpperCase();
+
+      if(!code){
+        alert("Please enter a code!");
+        return;
+      }
+
+      const docRef = doc(db, "codes", code);
+      const docSnap = await getDoc(docRef);
+
+      if(!docSnap.exists()){
+        alert("❌ Invalid Code! Please check and try again.");
+        return;
+      }
+
+      if(docSnap.data().used){
+        alert("⚠️ Code already used! Try another code.");
+        return;
+      }
+
+      sessionStorage.setItem("validCode", code);
+      window.location.href = "spin.html";
+    }
+
+    // Allow Enter key to submit
+    document.getElementById("codeInput").addEventListener("keypress", function(event) {
+      if (event.key === "Enter") {
+        checkCode();
+      }
+    });
+  </script>
+
+</body>
+</html>
