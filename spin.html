@@ -189,8 +189,10 @@
 
       result.innerHTML = "Spinning...";
 
-      const randomIndex = Math.floor(Math.random() * prizes.length);
-      const rotation = 1440 + (randomIndex * 60);
+      const segmentAngle = 360 / prizes.length;
+const randomIndex = Math.floor(Math.random() * prizes.length);
+const rotation = 1440 + (randomIndex * segmentAngle) + (segmentAngle / 2);
+
 
       wheel.style.transform = `rotate(${rotation}deg)`;
 
