@@ -320,7 +320,15 @@ button:disabled {
     <button onclick="closePopup()">Awesome! 🎉</button>
   </div>
 </div>
+<div class="popup-overlay" id="errorPopup">
+  <div class="popup">
+    <h2 style="color:#ff4d4d;">⚠️ ERROR</h2>
+    <div class="prize-text" id="errorText"></div>
+    <button onclick="closeErrorPopup()">OK</button>
+  </div>
+</div>
 
+<audio id="errorSound" src="https://cdn.pixabay.com/audio/2022/03/15/audio_115b9bcb1b.mp3"></audio>
 <script type="module">
 import { db } from "./firebase.js";
 import { doc, updateDoc, getDoc } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js";
@@ -419,7 +427,19 @@ window.closePopup = function() {
   const popup = document.getElementById("popup");
   popup.classList.remove("show");
 }
+function showErrorPopup(message) {
+  document.getElementById("errorText").innerText = message;
+  document.getElementById("errorPopup").classList.add("show");
 
+  const sound = document.getElementById("errorSound");
+  sound.currentTime = 0;
+  sound.play().catch(()=>{});
+}
+
+window.closeErrorPopup = function() {
+  document.getElementById("errorPopup").classList.remove("show");
+  window.location.href = "index.html";
+}
 window.spinWheel = async function () {
   if (isSpinning) return;
   isSpinning = true;
@@ -444,15 +464,17 @@ window.spinWheel = async function () {
     const docSnap = await getDoc(docRef);
     
     if (!docSnap.exists()) {
-      alert("Invalid code!");
-      window.location.href = "index.html";
-      return;
+      showErrorPopup("Invalid code!");
+isSpinning = false;
+button.disabled = false;
+return;
     }
     
     if (docSnap.data().used) {
-      alert("⚠️ Code already used! Get a new code.");
-      window.location.href = "index.html";
-      return;
+      showErrorPopup("Code already used! Get a new code.");
+isSpinning = false;
+button.disabled = false;
+return;
     }
   } catch (error) {
     console.error("Error:", error);
