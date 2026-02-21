@@ -138,6 +138,26 @@ button:hover{
   width:300px;
   box-shadow:0 0 30px rgba(255,215,0,0.6);
   animation:popupAnim 0.3s ease;
+  border:2px solid rgba(255,215,0,0.3);
+}
+
+.popup-box h2{
+  color:#ffd700;
+  font-size:24px;
+  margin-bottom:15px;
+}
+
+.popup-box.error h2{
+  color:#ff6b6b;
+}
+
+.popup-box.success h2{
+  color:#2ed573;
+}
+
+.popup-box p{
+  font-size:16px;
+  margin-bottom:20px;
 }
 
 .popup-box button{
@@ -145,9 +165,10 @@ button:hover{
   padding:10px 25px;
   border:none;
   border-radius:30px;
-  background:gold;
+  background:linear-gradient(135deg,#ffd700,#ffed4a);
   cursor:pointer;
   font-weight:bold;
+  color:#1a1a2e;
 }
 
 @keyframes popupAnim{
@@ -180,7 +201,8 @@ button:hover{
 
 <!-- Custom Popup -->
 <div id="customPopup" class="popup">
-  <div class="popup-box">
+  <div class="popup-box" id="popupBox">
+    <h2 id="popupTitle">Notice</h2>
     <p id="popupMessage"></p>
     <button onclick="closePopup()">OK</button>
   </div>
@@ -190,12 +212,94 @@ button:hover{
 import { db } from "./firebase.js";
 import { doc, getDoc } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js";
 
+// ✅ SOUND PLAYER - Web Audio API
+class SoundPlayer {
+  constructor() {
+    this.audioContext = null;
+  }
+
+  init() {
+    if (!this.audioContext) {
+      this.audioContext = new (window.AudioContext || window.webkitAudioContext)();
+    }
+    if (this.audioContext.state === 'suspended') {
+      this.audioContext.resume();
+    }
+  }
+
+  // 🎵 Error sound - low beep
+  playError() {
+    this.init();
+    const oscillator = this.audioContext.createOscillator();
+    const gainNode = this.audioContext.createGain();
+    
+    oscillator.connect(gainNode);
+    gainNode.connect(this.audioContext.destination);
+    
+    oscillator.frequency.value = 200;
+    oscillator.type = 'sine';
+    
+    gainNode.gain.setValueAtTime(0.3, this.audioContext.currentTime);
+    gainNode.gain.exponentialRampToValueAtTime(0.01, this.audioContext.currentTime + 0.3);
+    
+    oscillator.start(this.audioContext.currentTime);
+    oscillator.stop(this.audioContext.currentTime + 0.3);
+  }
+
+  // 🎵 Success sound - nice ding
+  playSuccess() {
+    this.init();
+    const oscillator = this.audioContext.createOscillator();
+    const gainNode = this.audioContext.createGain();
+    
+    oscillator.connect(gainNode);
+    gainNode.connect(this.audioContext.destination);
+    
+    oscillator.frequency.value = 600;
+    oscillator.type = 'sine';
+    
+    gainNode.gain.setValueAtTime(0.3, this.audioContext.currentTime);
+    gainNode.gain.exponentialRampToValueAtTime(0.01, this.audioContext.currentTime + 0.4);
+    
+    oscillator.start(this.audioContext.currentTime);
+    oscillator.stop(this.audioContext.currentTime + 0.4);
+  }
+
+  // 🎵 Success melody - multiple notes
+  playSuccessMelody() {
+    this.init();
+    const notes = [523, 659, 784]; // C, E, G
+    
+    notes.forEach((freq, i) => {
+      setTimeout(() => {
+        const oscillator = this.audioContext.createOscillator();
+        const gainNode = this.audioContext.createGain();
+        
+        oscillator.connect(gainNode);
+        gainNode.connect(this.audioContext.destination);
+        
+        oscillator.frequency.value = freq;
+        oscillator.type = 'sine';
+        
+        gainNode.gain.setValueAtTime(0.25, this.audioContext.currentTime);
+        gainNode.gain.exponentialRampToValueAtTime(0.01, this.audioContext.currentTime + 0.3);
+        
+        oscillator.start(this.audioContext.currentTime);
+        oscillator.stop(this.audioContext.currentTime + 0.3);
+      }, i * 100);
+    });
+  }
+}
+
+const soundPlayer = new SoundPlayer();
+
 window.checkCode = async function(){
 
   const code = document.getElementById("codeInput").value.trim().toUpperCase();
 
   if(!code){
-    showPopup("⚠️ Please enter a code!");
+    showPopup("⚠️ Please enter a code!", "Error", "error");
+    soundPlayer.playError();
     return;
   }
 
@@ -203,22 +307,40 @@ window.checkCode = async function(){
   const docSnap = await getDoc(docRef);
 
   if(!docSnap.exists()){
-    showPopup("❌ Invalid Code! Please try again.");
+    showPopup("❌ Invalid Code! Please try again.", "Error", "error");
+    soundPlayer.playError();
     return;
   }
 
   if(docSnap.data().used){
-    showPopup("⚠️ Code already used!");
+    showPopup("⚠️ Code already used! Get a new code.", "Used", "error");
+    soundPlayer.playError();
     return;
   }
 
+  // ✅ Success - play nice sound
+  soundPlayer.playSuccessMelody();
+  
   sessionStorage.setItem("validCode",code);
-  window.location.href="spin.html";
+  
+  // Small delay for sound
+  setTimeout(() => {
+    window.location.href="spin.html";
+  }, 500);
 }
 
-function showPopup(message){
-  document.getElementById("popupMessage").innerText=message;
-  document.getElementById("customPopup").classList.add("show");
+function showPopup(message, title = "Notice", type = "error"){
+  const popup = document.getElementById("customPopup");
+  const popupBox = document.getElementById("popupBox");
+  const popupTitle = document.getElementById("popupTitle");
+  const popupMessage = document.getElementById("popupMessage");
+  
+  popupTitle.innerText = title;
+  popupMessage.innerText = message;
+  
+  popupBox.className = "popup-box " + type;
+  
+  popup.classList.add("show");
 }
 
 window.closePopup=function(){
