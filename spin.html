@@ -452,11 +452,12 @@ window.spinWheel = async function () {
 
   const code = sessionStorage.getItem("validCode");
 
-  if (!code) {
-    alert("No valid code! Go back and enter code.");
-    window.location.href = "index.html";
-    return;
-  }
+ if (!code) {
+  showErrorPopup("No valid code! Go back and enter code.");
+  isSpinning = false;
+  button.disabled = false;
+  return;
+}
 
   // CHECK IF CODE ALREADY USED
   try {
