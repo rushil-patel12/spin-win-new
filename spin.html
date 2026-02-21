@@ -71,20 +71,23 @@ h1 {
 
 .center-circle {
   position: absolute;
+  width: 100px;
+  height: 100px;
+  background: white;
+  border-radius: 50%;
   top: 50%;
   left: 50%;
   transform: translate(-50%, -50%);
-  width: 80px;
-  height: 80px;
-  background: linear-gradient(135deg, #ffd700, #ffed4a);
-  border-radius: 50%;
-  box-shadow: 0 0 20px rgba(0,0,0,0.3);
-  z-index: 5;
   display: flex;
-  align-items: center;
   justify-content: center;
-  font-size: 30px;
-  border: 4px solid #fff;
+  align-items: center;
+  box-shadow: 0 0 25px gold;
+  z-index: 10;
+}
+
+.center-circle img {
+  width: 70px;
+  height: auto;
 }
 
 .labels {
@@ -280,7 +283,9 @@ button:disabled {
   <div class="wheel" id="wheel">
     <div class="segments"></div>
     <div class="labels" id="labels"></div>
-    <div class="center-circle">🎰</div>
+    <div class="center-circle">
+  <img src="logo.png" alt="Logo">
+</div>
   </div>
 </div>
 
