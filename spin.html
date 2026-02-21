@@ -45,7 +45,9 @@ h1 {
   height: 100%;
   border-radius: 50%;
   position: relative;
-  transition: transform 5s cubic-bezier(0.25, 0.1, 0.25, 1);
+  /* thoda lamba + smooth ease-out */
+  transition: transform 5.5s cubic-bezier(0.08, 0.69, 0.16, 0.99);
+  will-change: transform;
   box-shadow: 
     0 0 0 8px #ffd700,
     0 0 0 12px rgba(255,215,0,0.3),
@@ -492,23 +494,18 @@ return;
   const selectedIndex = getWeightedIndex();
   const selectedPrize = prizes[selectedIndex];
   
-  const extraSpins = 8 * 360;
+  const extraSpins = 10 * 360; // 8 ki jagah 10 round
   const stopAngle = (selectedIndex * segmentAngle) + (segmentAngle / 2);
   currentRotation += extraSpins + (360 - stopAngle);
 
   wheel.style.transform = `rotate(${currentRotation}deg)`;
 
   // TICK SOUND
-  let tickCount = 0;
-  const tickInterval = setInterval(() => {
-    if (tickCount < 10) {
-      tickSound.currentTime = 0;
-      tickSound.play().catch(() => {});
-      tickCount++;
-    } else {
-      clearInterval(tickInterval);
-    }
-  }, 300);
+   // TICK / SPIN SOUND - continuous spin effect
+  tickSound.pause();
+  tickSound.currentTime = 0;
+  tickSound.loop = true;          // jab tak wheel ghoomega, sound chalta rahega
+  tickSound.play().catch(() => {});
 
   // SHOW POPUP AFTER SPIN
   setTimeout(() => {
@@ -524,7 +521,7 @@ return;
     
     sessionStorage.removeItem("validCode");
     
-  }, 5000);
+  }, 5500);
 };
 </script>
 
