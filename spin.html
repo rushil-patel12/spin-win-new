@@ -71,23 +71,36 @@ h1 {
 
 .center-circle {
   position: absolute;
-  width: 100px;
-  height: 100px;
-  background: white;
-  border-radius: 50%;
+  width: 120px;
+  height: 120px;
   top: 50%;
   left: 50%;
   transform: translate(-50%, -50%);
+  border-radius: 50%;
   display: flex;
   justify-content: center;
   align-items: center;
-  box-shadow: 0 0 25px gold;
-  z-index: 10;
+  z-index: 20;
+
+  /* Glass effect */
+  background: radial-gradient(circle at 30% 30%, #ffffff, #e6e6e6);
+  box-shadow:
+    0 0 0 6px gold,
+    0 0 25px rgba(255,215,0,0.9),
+    inset 0 5px 15px rgba(0,0,0,0.2);
 }
 
 .center-circle img {
-  width: 70px;
+  width: 80px;
   height: auto;
+  filter: drop-shadow(0 0 10px gold);
+  animation: centerGlow 2s ease-in-out infinite;
+}
+
+@keyframes centerGlow {
+  0% { transform: scale(1); }
+  50% { transform: scale(1.08); }
+  100% { transform: scale(1); }
 }
 
 .labels {
